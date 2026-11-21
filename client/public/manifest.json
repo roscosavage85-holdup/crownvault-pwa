@@ -1,0 +1,47 @@
+14. WEB APP MANIFEST (manifest.json)
+ * FILE: manifest.json
+ ******************************************************************************/
+
+{
+  "short_name": "SweepCasino",
+  "name": "Sweepstakes Casino Social Gaming Platform",
+  "description": "Play free slots, earn Gold Coins & Sweeps Coins, claim 7-day daily bonuses, and redeem real cash prizes!",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0F172A",
+  "theme_color": "#4F46E5",
+  "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["entertainment", "games", "casino"],
+  "shortcuts": [
+    {
+      "name": "Claim Daily Bonus",
+      "short_name": "Daily Bonus",
+      "description": "Claim your 7-day streak rewards & bonus wheel spin",
+      "url": "/?action=daily-bonus",
+      "icons": [{ "src": "/icons/bonus-shortcut.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Coin Store",
+      "short_name": "Store",
+      "description": "Buy Gold Coins & get free Sweeps Coins",
+      "url": "/?action=store",
+      "icons": [{ "src": "/icons/store-shortcut.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

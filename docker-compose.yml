@@ -1,0 +1,73 @@
+15. DOCKER CONTAINER ORCHESTRATION (docker-compose.yml)
+ * FILE: docker-compose.yml
+ ******************************************************************************/
+
+version: '3.8'
+
+services:
+  # 1. Node.js Express Backend API Server
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sweepstakes_api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgres://sweepstakes_user:SweepstakesSecurePass2026!@postgres:5432/sweepstakes_casino
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=super_secret_sweepstakes_jwt_key_2026
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - sweepstakes_net
+
+  # 2. PostgreSQL Relational Database (v15)
+  postgres:
+    image: postgres:15-alpine
+    container_name: sweepstakes_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: sweepstakes_user
+      POSTGRES_PASSWORD: SweepstakesSecurePass2026!
+      POSTGRES_DB: sweepstakes_casino
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sweepstakes-db-schema-v6.sql:/docker-entrypoint-initdb.d/01_init_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sweepstakes_user -d sweepstakes_casino"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sweepstakes_net
+
+  # 3. Redis In-Memory Cache (for Rate Limiting, Geofence Lookups & Sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: sweepstakes_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - sweepstakes_net
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+
+networks:
+  sweepstakes_net:
+    driver: bridge

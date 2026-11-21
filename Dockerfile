@@ -1,1 +1,25 @@
-\# Dockerfile for Express.js API Server FROM node:18-alpine WORKDIR /usr/src/app # Copy package manifests and install dependencies COPY package\*.json ./ RUN npm install --production # Copy source files COPY . . # Expose default application port EXPOSE 3000 # Health check endpoint HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \\ CMD wget --quiet --tries=1 --spider http://localhost:3000/api/wins/recent-ticker || exit 1 # Start Node application CMD ["node", "sweepstakes-backend-api-v6.js"]
+16. DOCKERFILE (Dockerfile)
+ * FILE: Dockerfile
+ ******************************************************************************/
+
+# Dockerfile for Express.js API Server
+FROM node:18-alpine
+
+WORKDIR /usr/src/app
+
+# Copy package manifests and install dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy source files
+COPY . .
+
+# Expose default application port
+EXPOSE 3000
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:3000/api/wins/recent-ticker || exit 1
+
+# Start Node application
+CMD ["node", "sweepstakes-backend-api-v6.js"]
