@@ -1,25 +1,18 @@
-16. DOCKERFILE (Dockerfile)
- * FILE: Dockerfile
- ******************************************************************************/
+FROM node:18-alpine AS client-build
+WORKDIR /app/client
+COPY client/package*.json ./
+RUN npm ci
+COPY client/ ./
+RUN npm run build
 
-# Dockerfile for Express.js API Server
-FROM node:18-alpine
-
-WORKDIR /usr/src/app
-
-# Copy package manifests and install dependencies
-COPY package*.json ./
-RUN npm install --production
-
-# Copy source files
-COPY . .
-
-# Expose default application port
+FROM node:18-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+COPY server/package*.json ./
+RUN npm ci --omit=dev
+COPY server/ ./
+COPY --from=client-build /app/client/build ./client/build
 EXPOSE 3000
-
-# Health check endpoint
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:3000/api/wins/recent-ticker || exit 1
-
-# Start Node application
-CMD ["node", "sweepstakes-backend-api-v6.js"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:3000/api/health || exit 1
+CMD ["node", "server.js"]
