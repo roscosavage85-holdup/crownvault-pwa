@@ -11,8 +11,8 @@ const PACKAGES = [
   { id: 4, priceUsd: 99.99, gc: 1000000, bonusSc: 110.0, popular: false },
 ];
 
-export default function StoreCashierRedemption({ userId, kycStatus = 'UNVERIFIED', stateCode = 'TX', onBalanceUpdate }) {
-  const [activeTab, setActiveTab] = useState('STORE'); // STORE or REDEEM
+export default function StoreCashierRedemption({ userId, kycStatus = 'UNVERIFIED', stateCode = 'TX', onBalanceUpdate, initialTab = 'STORE' }) {
+  const [activeTab, setActiveTab] = useState(initialTab); // STORE or REDEEM
   const [selectedPkg, setSelectedPkg] = useState(PACKAGES[1]);
   const [pm, setPm] = useState('CREDIT_CARD');
   const [redeemAmount, setRedeemAmount] = useState(50.0);

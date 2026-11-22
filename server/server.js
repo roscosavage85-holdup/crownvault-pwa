@@ -9,9 +9,11 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 const apiRouter = require('./sweepstakes-backend-api-v6.js');
+const walletRouter = require('./routes/wallet.js');
 const { router: geofenceRouter } = require('./geofencing-kyc-service.js');
 
 app.use('/api/compliance', geofenceRouter);
+app.use('/api/wallet', walletRouter);
 app.use('/api', apiRouter);
 
 app.get('/api/health', (req, res) => {

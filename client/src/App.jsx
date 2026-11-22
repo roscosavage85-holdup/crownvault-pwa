@@ -1,53 +1,97 @@
-import React, { useState } from 'react';
-import SlotMachineComponent from './components/SlotMachineComponent';
-import CasinoLobbyComponent from './components/CasinoLobbyComponent';
-import TopAdBannerComponent from './components/TopAdBannerComponent';
+import React, { useCallback, useState } from 'react';
+import './lobby.css';
 import BonusWheelComponent from './components/BonusWheelComponent';
-import VipLoyaltyComponent from './components/VipLoyaltyComponent';
-import StoreCashierRedemptionComponent from './components/StoreCashierRedemptionComponent';
-import PwaAppWrapper from './components/PwaAppWrapper';
+import BottomNav from './components/BottomNav';
 import CrownVaultAppUpdateBanner from './components/CrownVaultAppUpdateBanner';
-
-const TAB_ROUTES = {
-  lobby: 'lobby',
-  slot: 'slot',
-  wheel: 'wheel',
-  vip: 'vip',
-  store: 'store',
-};
+import PwaAppWrapper from './components/PwaAppWrapper';
+import SlotMachineComponent from './components/SlotMachineComponent';
+import StoreCashierRedemptionComponent from './components/StoreCashierRedemptionComponent';
+import VipLoyaltyComponent from './components/VipLoyaltyComponent';
+import WalletHeader from './components/WalletHeader';
+import LobbyPage from './pages/LobbyPage';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('lobby');
+  const [activeCurrency, setActiveCurrency] = useState('GC');
   const [userId] = useState('demo-user-123');
+  const [lobbyCategory, setLobbyCategory] = useState('All');
+  const [balances, setBalances] = useState(null);
+  const [refreshBalance, setRefreshBalance] = useState(() => async () => null);
+
+  const registerBalanceRefresh = useCallback((refresh) => {
+    setRefreshBalance(() => refresh);
+  }, []);
 
   const navigate = (target) => {
-    if (typeof target === 'string' && target.startsWith('/')) {
-      const route = target.split('/')[1];
-      if (TAB_ROUTES[route]) setActiveTab(route);
-      if (route === 'daily-bonus') setActiveTab('wheel');
-      if (route === 'milestones') setActiveTab('vip');
+    if (target === 'favorites') {
+      setLobbyCategory('Favorites');
+      setActiveTab('lobby');
       return;
     }
-    setActiveTab('slot');
+    if (target === 'lobby') {
+      setLobbyCategory('All');
+      setActiveTab('lobby');
+      return;
+    }
+    setActiveTab(target);
   };
+
+  const activeNavItem = activeTab === 'lobby' && lobbyCategory === 'Favorites'
+    ? 'favorites'
+    : activeTab;
 
   return (
     <PwaAppWrapper>
       <CrownVaultAppUpdateBanner />
-      <div style={{ minHeight: '100vh', backgroundColor: '#0b0e14', color: '#fff', fontFamily: 'sans-serif' }}>
-        <TopAdBannerComponent onNavigate={navigate} />
-        <nav aria-label="App navigation" style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: '0 16px 16px' }}>
-          {[['lobby', 'Lobby'], ['slot', 'Slots'], ['wheel', 'Daily'], ['vip', 'VIP'], ['store', 'Store']].map(([tab, label]) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '8px 12px', borderRadius: 8, border: 0, cursor: 'pointer', background: activeTab === tab ? '#f59e0b' : '#1e293b', color: activeTab === tab ? '#000' : '#fff' }}>{label}</button>
-          ))}
-        </nav>
-        <div style={{ padding: '16px', maxWidth: '1200px', margin: '0 auto' }}>
-          {activeTab === 'lobby' && <CasinoLobbyComponent userId={userId} onSelectGame={() => setActiveTab('slot')} />}
-          {activeTab === 'slot' && <SlotMachineComponent userId={userId} />}
-          {activeTab === 'wheel' && <BonusWheelComponent userId={userId} />}
-          {activeTab === 'vip' && <VipLoyaltyComponent userId={userId} />}
-          {activeTab === 'store' && <StoreCashierRedemptionComponent userId={userId} />}
-        </div>
+      <div className="crownvault-app">
+        <WalletHeader
+          userId={userId}
+          activeCurrency={activeCurrency}
+          onCurrencyChange={setActiveCurrency}
+          onStoreClick={() => navigate('store')}
+          onBonusClick={() => navigate('bonus')}
+          onBalanceRefresh={registerBalanceRefresh}
+          onBalancesChange={setBalances}
+        />
+        {activeTab === 'lobby' && (
+          <LobbyPage
+            userId={userId}
+            activeCurrency={activeCurrency}
+            balances={balances}
+            onRefreshBalance={refreshBalance}
+            initialCategory={lobbyCategory}
+            onNavigate={navigate}
+          />
+        )}
+        {activeTab === 'slot' && (
+          <div className="legacy-page"><SlotMachineComponent userId={userId} /></div>
+        )}
+        {activeTab === 'bonus' && (
+          <div className="legacy-page"><BonusWheelComponent userId={userId} /></div>
+        )}
+        {activeTab === 'vip' && (
+          <div className="legacy-page"><VipLoyaltyComponent userId={userId} /></div>
+        )}
+        {(activeTab === 'store' || activeTab === 'redeem') && (
+          <div className="legacy-page">
+            <StoreCashierRedemptionComponent
+              key={activeTab}
+              userId={userId}
+              initialTab={activeTab === 'redeem' ? 'REDEEM' : 'STORE'}
+              onBalanceUpdate={refreshBalance}
+            />
+          </div>
+        )}
+        {activeTab === 'menu' && (
+          <main className="app-menu">
+            <span className="section-kicker">YOUR CROWNVAULT</span>
+            <h1>More to explore</h1>
+            <button type="button" onClick={() => navigate('bonus')}>Daily bonus <span>→</span></button>
+            <button type="button" onClick={() => navigate('vip')}>VIP rewards <span>→</span></button>
+            <button type="button" onClick={() => navigate('slot')}>Play a game <span>→</span></button>
+          </main>
+        )}
+        <BottomNav activeItem={activeNavItem} onNavigate={navigate} />
       </div>
     </PwaAppWrapper>
   );
